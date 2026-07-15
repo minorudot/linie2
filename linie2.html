@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Usuwanie pustych linii</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            width: 100%;
+            max-width: 800px;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .description {
+            color: #666;
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+        
+        textarea {
+            width: 100%;
+            min-height: 400px;
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .info {
+            margin-top: 15px;
+            padding: 12px;
+            background: #f0f4ff;
+            border-left: 4px solid #667eea;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #555;
+        }
+
+        .recharge-btn {
+            display: block;
+            width: 100%;
+            margin-top: 20px;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            letter-spacing: 0.5px;
+            transition: opacity 0.2s, transform 0.1s;
+        }
+
+        .recharge-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .recharge-btn:active {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast {
+            display: none;
+            margin-top: 12px;
+            padding: 10px 16px;
+            background: #e6ffed;
+            border-left: 4px solid #2ecc71;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #2c7a4b;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Usuwanie pustych linii</h1>
+        <p class="description">Wklej lub wpisz tekst - puste linie na początku zostaną automatycznie usunięte</p>
+        
+        <textarea id="textbox" placeholder="Wklej tutaj swój tekst..."></textarea>
+        
+        <div class="info">
+            💡 Narzędzie automatycznie usuwa wszystkie puste linie na początku tekstu (^\n)
+        </div>
+
+        <button class="recharge-btn" id="rechargeBtn">⚡ Recharge</button>
+        <div class="toast" id="toast">✅ Gotowe! Tekst skopiowany do schowka.</div>
+    </div>
+
+    <script>
+        const textbox = document.getElementById('textbox');
+        const rechargeBtn = document.getElementById('rechargeBtn');
+        const toast = document.getElementById('toast');
+        
+        function removeLeadingNewlines() {
+            const currentValue = textbox.value;
+            const newValue = currentValue.replaceAll(/^\n/gm, '');
+            
+            if (currentValue !== newValue) {
+                textbox.value = newValue;
+            }
+        }
+        
+        textbox.addEventListener('input', removeLeadingNewlines);
+        textbox.addEventListener('paste', () => {
+            setTimeout(removeLeadingNewlines, 0);
+        });
+        
+        textbox.addEventListener('copy', () => {
+            setTimeout(() => {
+                textbox.value = '';
+            }, 0);
+        });
+
+        rechargeBtn.addEventListener('click', async () => {
+            try {
+                const clipText = await navigator.clipboard.readText();
+                // Remove " i " at the beginning of each line
+                const processed = clipText
+                    .split('\n')
+                    .map(line => {
+                        if (line.startsWith('"')) line = line.slice(1);
+                        if (line.endsWith('"')) line = line.slice(0, -1);
+                        return line;
+                    })
+                    .join('\n');
+                await navigator.clipboard.writeText(processed);
+                toast.style.display = 'block';
+                setTimeout(() => { toast.style.display = 'none'; }, 2500);
+            } catch (err) {
+                alert('Brak dostępu do schowka. Upewnij się, że przeglądarka ma uprawnienia.');
+            }
+        });
+    </script>
+</body>
+</html>
